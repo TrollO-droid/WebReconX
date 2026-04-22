@@ -7,91 +7,107 @@
 ![Python](https://img.shields.io/badge/Python-3.x-blue)
 ![Status](https://img.shields.io/badge/Status-Active-success)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey)
-![Type](https://img.shields.io/badge/Tool-Recon%20%26%20Scanner-orange)
-![Use](https://img.shields.io/badge/Use-Educational-important)
+![Type](https://img.shields.io/badge/Tool-Web%20Recon-orange)
+![Version](https://img.shields.io/badge/Version-2.0-important)
 
 ---
 
 ## 📌 Proje Hakkında
 
-**WebReconX**, web hedefleri üzerinde çok yönlü keşif (reconnaissance) ve temel güvenlik analizi yapabilen Python tabanlı bir araçtır.
+**WebReconX**, tek bir hedef üzerinde çok aşamalı keşif (recon) işlemleri gerçekleştiren, Python tabanlı bir analiz aracıdır.
 
-Araç, tek bir hedef üzerinde aşağıdaki işlemleri otomatik olarak gerçekleştirebilir:
+Araç aşağıdaki süreçleri otomatik olarak yürütür:
 
-* IP çözümleme ve Reverse DNS
+* IP çözümleme & Reverse DNS
 * Cloudflare koruma tespiti
-* Admin panel keşfi
-* Port tarama ve servis analizi
-* URL crawling (site haritalama)
-* Parametre analizi
+* Admin panel keşfi (gelişmiş kontrol)
+* Port tarama & servis analizi
+* URL crawling (maks. 500 URL)
+* URL filtreleme
+* Parametre (GET) analizi
 
 ---
 
 ## 🚀 Özellikler
 
-### 🌐 Hedef Analizi
+### 🌐 Hedef & Ağ Analizi
 
-* Domain veya direkt IP ile çalışabilir
-* Otomatik IP çözümleme
-* Reverse DNS desteği
+* Domain veya IP desteği
+* Otomatik IP çözümleme (`socket`)
+* Reverse DNS lookup
 
 ---
 
 ### 🛡️ Cloudflare Tespiti
 
-* Hedef IP, Cloudflare IP aralıkları ile karşılaştırılır
-* Koruma varsa kullanıcıya uyarı verilir
+* Geniş IP range listesi ile kontrol
+* Cloudflare arkasındaki hedeflerde kullanıcıya seçim sunar
 
 ---
 
-### 🔎 Admin Panel Tarayıcı
+### 🔎 Gelişmiş Admin Panel Tespiti
 
-* Wordlist tabanlı dizin taraması
-* `/admin`, `/panel`, `/login` gibi path’leri dener
-* 404 dışındaki yanıtları analiz eder
+* Wordlist tabanlı dizin tarama
+* Sadece status code değil, içerik analizi yapar:
+
+✔ Login form kontrolü
+✔ `<input type="password">` tespiti
+✔ Form + password kombinasyonu
+✔ Redirect analizleri
+✔ 403 → olası panel
 
 ---
 
 ### 🚪 Port Tarama & Servis Analizi
 
-* Kritik portlar üzerinde tarama yapar
+* Kritik port listesi ile hızlı tarama
 * Açık portları tespit eder
-* Her port için olası zafiyet açıklaması sunar
+* Her port için açıklama sunar
 
 Örnek:
 
 ```id="port"
-[+] Port 22 - SSH Brute force, weak keys
+[+] Port 22 - SSH Brute force, weak keys is Open
 ```
 
 ---
 
 ### 🕷️ URL Crawler
 
-* Site içindeki linkleri otomatik toplar
-* Maksimum 500 URL sınırı
-* Aynı domain içindeki sayfaları filtreler
+* Aynı domain içindeki linkleri toplar
+* `BeautifulSoup` ile parsing
+* Maksimum 500 URL limiti
+
+✔ Tekrar eden URL’leri filtreler
+✔ Otomatik dosyaya kayıt
+
+---
+
+### 📁 URL Filtreleme
+
+* Uzantıya göre filtreleme yapılabilir
+
+Örnek:
+
+```id="filter"
+.php
+.html
+```
 
 ---
 
 ### 🔍 Parametre Analizi
 
-* URL’lerdeki GET parametrelerini tespit eder
-* Örnek:
+* URL içerisindeki GET parametreleri tespit edilir
+
+Örnek:
 
 ```id="param"
-example.com/page.php?id=1
+site.com/page.php?id=1
 ```
 
----
-
-### 📁 Filtreleme Sistemi
-
-* URL’leri uzantıya göre filtreleme
-* Örnek:
-
-  * `.php`
-  * `.html`
+* Parametreler dosyaya kaydedilebilir
+* SQLi / XSS testleri için temel veri sağlar
 
 ---
 
@@ -106,7 +122,7 @@ pip install requests colorama user_agent beautifulsoup4
 ## 📂 Dosya Yapısı
 
 ```id="structure"
-test.py
+main.py (veya script dosyan)
 Wordlist.txt
 founded_urls.txt
 filtered_urls.txt
@@ -118,71 +134,76 @@ found_parameters.txt
 ## ⚙️ Kullanım
 
 ```bash id="run"
-python test.py
+python main.py
 ```
 
 ---
 
 ## 🧪 Çalışma Akışı
 
-1. Hedef site veya IP girilir
+1. Hedef (domain veya IP) girilir
 2. Sistem:
 
    * IP çözümleme yapar
-   * Cloudflare kontrolü yapar
-3. Admin panel taraması başlatılır
-4. Port taraması yapılır
-5. URL crawling başlar
-6. Parametre analizi yapılır
-7. Sonuçlar dosyalara kaydedilir
+   * Reverse DNS kontrol eder
+3. Cloudflare tespiti yapılır
+4. Admin panel taraması başlar
+5. Port taraması gerçekleştirilir
+6. URL crawling başlatılır
+7. URL filtreleme opsiyonu sunulur
+8. Parametre analizi yapılır
+9. Sonuçlar dosyalara kaydedilir
 
 ---
 
-## 🧠 Çalışma Mantığı
+## 🧠 Teknik Detaylar
 
-### 1. IP & DNS Analizi
+### Admin Panel Detection
 
-* `socket` kullanılarak IP çözülür
-* Reverse lookup yapılır
-
----
-
-### 2. Panel Keşfi
-
-* Wordlist üzerinden brute dizin taraması
-* HTTP response analiz edilir
+* Status code + içerik bazlı analiz
+* Form input kontrolü
+* Redirect parsing
 
 ---
 
-### 3. Port Tarama
+### Port Scanning
 
-* `socket.connect_ex()` ile port kontrolü
-* Açık portlar raporlanır
-
----
-
-### 4. Crawling
-
-* `BeautifulSoup` ile link extraction
-* `urljoin` ile normalize edilir
+* `socket.connect_ex()` kullanır
+* Timeout ile optimize edilmiştir
 
 ---
 
-### 5. Parametre Tespiti
+### Crawling Mekanizması
 
-* `urlparse` ve `parse_qs` ile analiz edilir
+* BFS mantığı ile çalışır
+* `visited_urls` ile tekrarları engeller
+
+---
+
+### Parametre Parsing
+
+* `urlparse` + `parse_qs` kullanılır
 
 ---
 
 ## ⚡ Geliştirme Planı
 
-* [ ] Multi-threading (daha hızlı tarama)
-* [ ] Proxy desteği
+* [ ] Multi-threading (hız artışı)
 * [ ] Banner grabbing stabil hale getirme
+* [ ] Proxy desteği
+* [ ] Subdomain keşfi
 * [ ] XSS / SQLi otomatik test modülü
-* [ ] JSON / rapor export sistemi
-* [ ] Subdomain tarama
-* [ ] GUI arayüz
+* [ ] JSON / rapor çıktısı
+* [ ] CLI argüman desteği
+
+---
+
+## ⚠️ Sınırlamalar
+
+* Cloudflare arkasındaki gerçek IP tespit edilmez
+* Rate limit durumlarında yavaşlayabilir
+* JavaScript tabanlı sitelerde crawling sınırlı olabilir
+* CAPTCHA bypass içermez
 
 ---
 
@@ -190,4 +211,7 @@ python test.py
 
 **Troll**
 
-NOTE: *Iyi Avlar Arkadaslar*
+---
+
+> Bu araç bir exploit aracı değil, bir keşif (recon) aracıdır.
+> Gerçek güvenlik analizi, çıkan verilerin doğru yorumlanmasına bağlıdır.
