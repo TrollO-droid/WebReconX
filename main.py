@@ -230,10 +230,18 @@ while True:
                         i = i.strip()
                         ad_url = f"https://{site}/{i}"
                         resadmin = requests.get(ad_url, headers=header, timeout=3)
-                        if resadmin.status_code != 404:
-                            print(Fore.LIGHTGREEN_EX + f"[+] Admin Panel Found: {ad_url}")
+                        if resadmin.status_code == 200:
+                            txt = resadmin.text.lower()
+                            if ('type="password"' in txt) or ('type="email"' in txt) or ('type="username"' in txt) or ('password' in txt and "<form" in txt):
+                                print(Fore.LIGHTGREEN_EX + f"[+] Admin Panel Found: {ad_url}\n")
+                            elif resadmin.status_code in [301, 302]:
+                                location = resadmin.headers.get9('Location', "").lower()
+                                if any(x in location for x in ["login", "admin", "panel", "auth", "author", "dashboard", "controlpanel", "cpanel", "yonetici", "yonetim", "adminarea", "adminpanel","login", 'admin panel', 'administrator', 'admin login']).lower():
+                                    print(Fore.LIGHTGREEN_EX + f"[+] Admin Panel Found: {ad_url}\n")
+                            elif resadmin.status_code == 403:
+                                print(Fore.LIGHTCYAN_EX + f"[?] Possible Admin Panel (403 Forbidden): {ad_url}\n")
                         else:
-                            print(Fore.LIGHTRED_EX + f"[-] Admin Panel Not Found")
+                            print(Fore.LIGHTRED_EX + f"[-] Admin Panel Not Found: {ad_url}\n")
             else:
                 print(Fore.LIGHTRED_EX + f"[-] Website is Down: https://{site}")
         elif secim.lower() == "n":
